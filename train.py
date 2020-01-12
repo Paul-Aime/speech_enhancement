@@ -30,7 +30,7 @@ def main():
 
     params = params_utils.Params()
     
-    params.load_model = False
+    params.load_model = True
     params.snr = -10 # dB
 
     # Model : create (and load if params.load_model == True)
