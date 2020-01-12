@@ -151,7 +151,7 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
                     epoch_percent = ((i+1) / dataset_size) * 100
                     elapsed_t = datetime.datetime.now() - start_t
                     elapsed_t_str = '{:02.0f}:{:02.0f}  -- {:5.1f}%  #{:4d}/{:d}'.format(
-                        *divmod(elapsed_t.seconds, 60), epoch_percent, i+1, dataset_size)
+                        *(divmod(elapsed_t.seconds, 60) + (epoch_percent,) + (i+1,) + (dataset_size,)))
                     print("  {} loss: {:.3f} (elapsed: {})".format(
                         mode, loss_mean, elapsed_t_str))#, end='\r')
 
