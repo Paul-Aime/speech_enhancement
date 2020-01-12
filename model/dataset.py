@@ -228,8 +228,8 @@ class CustomDataset(Dataset):
         rates = np.zeros(len(self))
         n_samples = np.zeros(len(self))
         for i, wav_path in enumerate(self.raw_paths):
-            if not i % 100:
-                print('#{:03d}/{:d}'.format(i+1, len(self)), end='\r')
+            # if not i % 100:
+            #     print('#{:03d}/{:d}'.format(i+1, len(self)), end='\r')
             si, _ = torchaudio.info(wav_path)
             rates[i], n_samples[i] = si.rate, si.length
 
