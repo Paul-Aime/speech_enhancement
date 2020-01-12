@@ -286,31 +286,16 @@ def stft(x, **kwargs):
     Only for 1xL tensors, i.e. C = 1
     https://librosa.github.io/librosa/generated/librosa.core.stft.html#librosa-core-stft
     """
-    # TODO maybe put a train and a test mode, as the test mode need
-    # TODO the angle part to make the reconstrcutuon
-
     S = librosa_stft(x[0].cpu().numpy(), **kwargs)
     S_abs = torch.tensor(np.abs(S), dtype=torch.double,
                          device=DEVICE).unsqueeze(dim=0)
     S_ang = torch.tensor(np.angle(S), dtype=torch.double,
                          device=DEVICE).unsqueeze(dim=0)
 
-    # Normalize # TODO check normalization
-    # S_abs = normalize(S_abs, (S_abs.mean(),), (S_abs.std(),))
-    # S_ang = normalize(S_ang, (S_ang.mean(),), (S_ang.std(),))
+    S_abs = normalize_stft(S_abs, mode='max')
+    S_ang = normalize_stft(S_ang, mode='max')
 
     return S_abs, S_ang
-
-
-def stft_abs(x, **kwargs):
-    """
-    Only for 1xL tensors, i.e. C = 1
-    https://librosa.github.io/librosa/generated/librosa.core.stft.html#librosa-core-stft
-    """
-    S = torch.tensor(np.abs(librosa_stft(x[0].cpu().numpy(), **kwargs)),
-                     dtype=torch.double).unsqueeze_(dim=0)
-    # S = normalize(S, (S.mean(),), (S.std(),))  # TODO check normalization
-    return S
 
 
 def istft(S_module, S_angle, **kwargs):
@@ -330,8 +315,8 @@ def add_noise_snr(sig, noise, snr):
 
     """
     # Center channels
-    sig.add_(- sig.mean(dim=1).unsqueeze(0).T)
-    noise.add_(- noise.mean(dim=1).unsqueeze(0).T)
+    sig.sub_(sig.mean(dim=1).unsqueeze(0).T)
+    noise.sub_(noise.mean(dim=1).unsqueeze(0).T)
 
     # Calcul addition coefficient
     alpha = ((torch.mean(sig**2, dim=1) /  # power of sig
@@ -340,18 +325,21 @@ def add_noise_snr(sig, noise, snr):
     return sig + (noise.T * alpha).T
 
 
-def normalize_sound(x):
+def normalize_sound(x, inplace=True):
     "Shape CxL"
+
+    if not inplace:
+        x = x.clone()
 
     # Handle 1D vectors
     # if len(x.shape) == 1:
     #     x = x.unsqueeze(dim=0)
 
     # Center channles
-    x.add_(- x.mean(dim=1).unsqueeze(dim=0).T)
+    x.sub_(x.mean(dim=1).unsqueeze(dim=0).T)
 
     # Divide by maximum magnitude to put x in range [-1 1]
-    x.mul_(1 / x.abs().max(dim=1).values.unsqueeze(dim=0).T)
+    x.div_(x.abs().max(dim=1).values.unsqueeze(dim=0).T)
 
     # Handle 1D vectors
     # if len(x.shape) == 1:
@@ -365,6 +353,23 @@ def normalize_sound2(x):
     x -= x.mean()
     mag_max = max(-x.min(), x.max())
     return x / mag_max
+
+
+def normalize_stft(S, mode='std', inplace=True):
+    # Only works for 1 channel
+    # shape of S : (1, H, W)
+    # see torchvision.transforms.functional import normalize for C>1
+
+    if not inplace:
+        S = S.clone()
+
+    if mode == 'max':
+        return S.sub_(S.mean()).div_(S.abs().max())
+    elif mode == 'std':
+        return S.sub_(S.mean()).div_(S.std())
+    else:
+        print('ERROR : mode unknown')
+        return
 
 
 ##################################################

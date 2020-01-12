@@ -74,12 +74,12 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
     if chkpt_logs is not None:
         logs.load_from_other(chkpt_logs)
 
-    nn = 0  # Early break for testing
+    # nn = 0  # Early break for testing
     while not logs.early_stop:
 
-        nn += 1  # TODO withdraw early break
-        if nn > 3:
-            break
+        # nn += 1  # TODO withdraw early break
+        # if nn > 3:
+        #     break
 
         if verbose:
             start_t = datetime.datetime.now()
@@ -104,7 +104,7 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
 
             # Compute verbose step
             if verbose:
-                verb_step = (dataset_size // 100)+1
+                verb_step = (dataset_size // 1000)+1
 
             # To compute mean loss over the full batch
             loss_hist = torch.zeros(dataset_size)
