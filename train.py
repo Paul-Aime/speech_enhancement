@@ -78,7 +78,7 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
     while not logs.early_stop:
 
         nn += 1  # TODO withdraw early break
-        if nn > 3:
+        if nn > 2:
             break
 
         if verbose:
@@ -110,13 +110,29 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
             loss_hist = torch.zeros(dataset_size)
             len_hist = torch.zeros(dataset_size)
 
+            #! killing generator syntax, for Google Cloud Platform
+            if data_set.mode == 'train':
+                snd_indices = np.arange(data_set.train_size)
+            elif data_set.mode == 'validation':
+                snd_indices = np.arange(data_set.train_size, len(data_set))
+            else:
+                return ('ERROR : unknown mode, must be one of str(test, train, validation)')
+
             # Each sound is considered as a batch, keep only module
             mm = 0  # early break for testing
-            for i, ((x, _), (y, _)) in enumerate(data_set.batch_loader()):
+            # for i, ((x, _), (y, _)) in enumerate(data_set.batch_loader()):
+
+            for i, snd_id in enumerate(snd_indices):
 
                 mm += 1  # TODO withdraw early break
                 if mm > 3:
                     break
+
+                #! killing generator syntax, for Google Cloud Platform
+                # for snd_id in np.random.permutation(snd_indices):
+                #     yield self[snd_id] # a batch is a full sound
+
+                (x, _), (y, _) = data_set[snd_id]
 
                 # Batchify x
                 X = batchify(x, params.n_frames)  # shape (B, C, H, W)
@@ -151,7 +167,7 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
 
                 # Print info (or register loss_mean if last sound)
                 if (verbose and not i % verb_step) or (i+1 == dataset_size):
-                    loss_mean = torch.sum(loss_hist[:i+1] *
+                    loss_mean = torch.sum(loss_hist[: i+1] *
                                           len_hist[:i+1]) / len_hist[:i+1].sum()
 
                     epoch_percent = ((i+1) / dataset_size) * 100
@@ -159,7 +175,7 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
                     elapsed_t_str = '{:02.0f}:{:02.0f}  -- {:5.1f}%  #{:4d}/{:d}'.format(
                         *(divmod(elapsed_t.seconds, 60) + (epoch_percent,) + (i+1,) + (dataset_size,)))
                     print("  {} loss: {:.3f} (elapsed: {})".format(
-                        mode, loss_mean, elapsed_t_str))#, end='\r')
+                        mode, loss_mean, elapsed_t_str))  # , end='\r')
 
                 # Register loss
                 # if i + 1 == dataset_size:
