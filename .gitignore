@@ -121,3 +121,6 @@ park2017*/
 
 # Saved models
 experiments/saved_models
+
+# GCP related
+experiments/download_from_gcp.sh
