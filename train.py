@@ -78,7 +78,7 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
     while not logs.early_stop:
 
         nn += 1  # TODO withdraw early break
-        if nn > 2:
+        if nn > 3:
             break
 
         if verbose:
@@ -104,7 +104,7 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
 
             # Compute verbose step
             if verbose:
-                verb_step = (dataset_size // 200)+1
+                verb_step = (dataset_size // 100)+1
 
             # To compute mean loss over the full batch
             loss_hist = torch.zeros(dataset_size)
@@ -115,7 +115,7 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
             for i, ((x, _), (y, _)) in enumerate(data_set.batch_loader()):
 
                 mm += 1  # TODO withdraw early break
-                if mm > 3:
+                if mm > 30:
                     break
 
                 # Batchify x

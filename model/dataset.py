@@ -171,8 +171,6 @@ class CustomDataset(Dataset):
         x = stft(raw_in, **self.stft_kwargs)
         y = stft(raw_target, **self.stft_kwargs)
 
-        print(x[0].device)
-        print(DEVICE)
         assert x[0].device == DEVICE
 
         return x, y
