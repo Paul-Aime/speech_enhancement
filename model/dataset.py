@@ -196,7 +196,8 @@ class CustomDataset(Dataset):
         for snd_id in np.random.permutation(snd_indices):
             batch = self[snd_id] # a batch is a full sound
             yield batch
-            return
+        
+        return
 
     # ------------------------------------------------------------------
     # Dataset utilities
