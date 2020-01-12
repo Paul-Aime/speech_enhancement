@@ -181,7 +181,7 @@ class CustomDataset(Dataset):
     def batch_loader(self):
 
         if self.mode == 'train':
-            snd_indices = np.arange(self.train_size)
+            snd_indices = np.random.permutation(np.arange(self.train_size))
         elif self.mode == 'validation':
             snd_indices = np.arange(self.train_size, len(self))
         elif self.mode == 'test':
@@ -189,7 +189,7 @@ class CustomDataset(Dataset):
         else:
             return ('ERROR : unknown mode, must be one of str(test, train, validation)')
 
-        for snd_id in np.random.permutation(snd_indices):
+        for snd_id in snd_indices:
             yield self[snd_id]  # a batch is a full sound
 
     # ------------------------------------------------------------------
