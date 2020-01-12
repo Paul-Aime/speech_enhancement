@@ -12,9 +12,9 @@ class Params():
         # --- Learning parameters
         self.learning_rate = 1e-3
         self.n_frames = 7
-        self.max_epoch = 30
+        self.max_epoch = 50
         # same ratio as noise set ratio (in seconds)
-        self.train_val_ratio = train_val_ratio = 180/(180+25)
+        self.train_val_ratio = 180/(180+25)
 
         # --- Dataset parameters
 
