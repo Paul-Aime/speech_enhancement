@@ -29,6 +29,9 @@ def main():
     verbose = True
 
     params = params_utils.Params()
+    
+    params.load_model = False
+    params.snr = -10 # dB
 
     # Model : create (and load if params.load_model == True)
     model, optimizer, chkpt_logs = net.get_model(params, verbose=verbose)
@@ -40,8 +43,6 @@ def main():
                                       './data/noise/babble_train.wav', params, mode='train')
     val_set = dataset.CustomDataset(params.train_raw_csv_path,
                                     './data/noise/babble_val.wav', params, mode='validation')
-    # test_set = dataset.CustomDataset(params.test_raw_csv_path,
-    #                                  params.test_noise_csv_path, params, mode='test')
 
     train(model, optimizer, loss_fn, train_set, val_set, params,
           chkpt_logs=chkpt_logs)
