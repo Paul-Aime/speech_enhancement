@@ -110,6 +110,7 @@ def main():
 ##################################################
 # Classes
 
+
 class CustomDataset(Dataset):
     """TIMIT dataset."""
 
@@ -140,7 +141,8 @@ class CustomDataset(Dataset):
         self.noise = normalize_sound(self.noise)
         self.resampler.orig_freq = fs_orig
         # TODO why float needed ?
-        self.noise = self.resampler(self.noise.float().cpu()).to(DEVICE).double()
+        self.noise = self.resampler(
+            self.noise.float().cpu()).to(DEVICE).double()
         self.noise = normalize_sound(self.noise)
         self.noise_len = self.noise.shape[1]
         self.noise_len_in_s = self.noise_len * (1/self.fs)
@@ -157,7 +159,8 @@ class CustomDataset(Dataset):
         raw_target, fs_orig = read_wav(self.raw_paths[index])
         self.resampler.orig_freq = fs_orig
         # TODO why it's needed to go with float ...
-        raw_target = self.resampler(raw_target.float().cpu()).to(DEVICE).double()
+        raw_target = self.resampler(
+            raw_target.float().cpu()).to(DEVICE).double()
         raw_target = normalize_sound(raw_target)
 
         # Add noise to the raw ground truth to create the raw input
@@ -189,7 +192,7 @@ class CustomDataset(Dataset):
             return ('ERROR : unknown mode, must be one of str(test, train, validation)')
 
         for snd_id in np.random.permutation(snd_indices):
-            yield self[snd_id] # a batch is a full sound
+            yield self[snd_id]  # a batch is a full sound
 
     # ------------------------------------------------------------------
     # Dataset utilities
@@ -288,9 +291,11 @@ def stft(x, **kwargs):
     # TODO maybe put a train and a test mode, as the test mode need
     # TODO the angle part to make the reconstrcutuon
 
-    S = torch.tensor(librosa_stft(x[0].cpu().numpy(), **kwargs), device=DEVICE)
-    S_abs = torch.tensor(np.abs(S), dtype=torch.double).unsqueeze(dim=0)
-    S_ang = torch.tensor(np.angle(S), dtype=torch.double).unsqueeze(dim=0)
+    S = librosa_stft(x[0].cpu().numpy(), **kwargs)
+    S_abs = torch.tensor(np.abs(S), dtype=torch.double,
+                         device=DEVICE).unsqueeze(dim=0)
+    S_ang = torch.tensor(np.angle(S), dtype=torch.double,
+                         device=DEVICE).unsqueeze(dim=0)
 
     # Normalize # TODO check normalization
     # S_abs = normalize(S_abs, (S_abs.mean(),), (S_abs.std(),))
