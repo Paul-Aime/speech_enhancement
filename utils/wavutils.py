@@ -4,9 +4,12 @@ import numpy as np
 import torch
 from scipy.io import wavfile
 
-from utils.cuda_utils import init_cuda
+# from utils.cuda_utils import init_cuda
 
-DEVICE = init_cuda()
+if torch.cuda.is_available():
+    DEVICE = torch.device('cuda')
+else:
+    DEVICE = torch.device('cpu')
 
 
 def read_wav(filename, offset=0, nframes=None, dtype=torch.double):

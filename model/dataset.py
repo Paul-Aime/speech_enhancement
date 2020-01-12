@@ -22,10 +22,13 @@ if True:  # For the order to not be broken with autoformatter
     from utils import cuda_utils
     from utils.utils import sec_to_hms
     from utils.wavutils import read_wav
-    from utils.cuda_utils import init_cuda
+    # from utils.cuda_utils import init_cuda
 
 
-DEVICE = init_cuda()
+if torch.cuda.is_available():
+    DEVICE = torch.device('cuda')
+else:
+    DEVICE = torch.device('cpu')
 
 ##################################################
 # Main

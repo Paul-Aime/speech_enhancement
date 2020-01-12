@@ -9,8 +9,14 @@ from utils import backup_utils, params_utils, cuda_utils
 from model import net, dataset
 from model.dataset import batchify
 
+# DEVICE = cuda_utils.init_cuda(verbose=True)
 
-DEVICE = cuda_utils.init_cuda(verbose=True)
+if torch.cuda.is_available():
+    DEVICE = torch.device('cuda')
+    print('Using GPU')
+else:
+    DEVICE = torch.device('cpu')
+    print('Using CPU')
 
 
 ###############################################################################
@@ -98,7 +104,7 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
 
             # Compute verbose step
             if verbose:
-                verb_step = (dataset_size // 1000)+1
+                verb_step = (dataset_size // 200)+1
 
             # To compute mean loss over the full batch
             loss_hist = torch.zeros(dataset_size)
