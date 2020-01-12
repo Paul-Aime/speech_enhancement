@@ -288,7 +288,7 @@ def stft(x, **kwargs):
     # TODO maybe put a train and a test mode, as the test mode need
     # TODO the angle part to make the reconstrcutuon
 
-    S = librosa_stft(x[0].cpu().numpy(), **kwargs).to(DEVICE)
+    S = torch.tensor(librosa_stft(x[0].cpu().numpy(), **kwargs), device=DEVICE)
     S_abs = torch.tensor(np.abs(S), dtype=torch.double).unsqueeze(dim=0)
     S_ang = torch.tensor(np.angle(S), dtype=torch.double).unsqueeze(dim=0)
 
