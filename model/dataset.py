@@ -180,6 +180,7 @@ class CustomDataset(Dataset):
 
     def batch_loader(self):
 
+        # TODO make snd_indices an attribute, only permute when mode train
         if self.mode == 'train':
             snd_indices = np.random.permutation(np.arange(self.train_size))
         elif self.mode == 'validation':
