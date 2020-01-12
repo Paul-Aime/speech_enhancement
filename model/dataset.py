@@ -286,7 +286,7 @@ def stft(x, **kwargs):
     # TODO maybe put a train and a test mode, as the test mode need
     # TODO the angle part to make the reconstrcutuon
 
-    S = librosa_stft(x[0].numpy(), **kwargs)
+    S = librosa_stft(x[0].cpu().numpy(), **kwargs)
     S_abs = torch.tensor(np.abs(S), dtype=torch.double).unsqueeze(dim=0)
     S_ang = torch.tensor(np.angle(S), dtype=torch.double).unsqueeze(dim=0)
 
@@ -302,7 +302,7 @@ def stft_abs(x, **kwargs):
     Only for 1xL tensors, i.e. C = 1
     https://librosa.github.io/librosa/generated/librosa.core.stft.html#librosa-core-stft
     """
-    S = torch.tensor(np.abs(librosa_stft(x[0].numpy(), **kwargs)),
+    S = torch.tensor(np.abs(librosa_stft(x[0].cpu().numpy(), **kwargs)),
                      dtype=torch.double).unsqueeze_(dim=0)
     # S = normalize(S, (S.mean(),), (S.std(),))  # TODO check normalization
     return S

@@ -237,7 +237,7 @@ def spec_scipy_stft(x, **kwargs):
 @time(NUMBER, ACTIVATED)
 def spec_librosa_stft(x, **kwargs):
     """https://librosa.github.io/librosa/generated/librosa.core.stft.html#librosa-core-stft"""
-    S = torch.tensor(np.abs(librosa_stft(x[0].numpy(), **kwargs)),
+    S = torch.tensor(np.abs(librosa_stft(x[0].cpu().numpy(), **kwargs)),
                      dtype=torch.double).unsqueeze_(dim=0)
     return normalize(S, (S.mean(),), (S.std(),))
 
