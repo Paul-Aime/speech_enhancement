@@ -1,5 +1,27 @@
 # TODO list
 
+## Prereqisites
+
+Install conda and run :
+
+```bash
+conda env create -f cpu-environment.yml
+conda activate torch
+```
+
+or 
+
+```bash
+conda env create -f cpu-environment.yml
+conda activate torch-gpu
+```
+
+then
+
+```
+python train.py
+```
+
 ## Code
 
 ### Train / Validation
