@@ -110,11 +110,6 @@ def main():
 ##################################################
 # Classes
 
-# self.resampler = torchaudio.transforms.Resample(
-#             orig_freq=fs_orig,
-#             new_freq=self.fs)
-
-
 class CustomDataset(Dataset):
     """TIMIT dataset."""
 
@@ -145,7 +140,7 @@ class CustomDataset(Dataset):
         self.noise = normalize_sound(self.noise)
         self.resampler.orig_freq = fs_orig
         # TODO why float needed ?
-        self.noise = self.resampler(self.noise.float()).double()
+        self.noise = self.resampler(self.noise.float().cpu()).to(DEVICE).double()
         self.noise = normalize_sound(self.noise)
         self.noise_len = self.noise.shape[1]
         self.noise_len_in_s = self.noise_len * (1/self.fs)
@@ -162,7 +157,7 @@ class CustomDataset(Dataset):
         raw_target, fs_orig = read_wav(self.raw_paths[index])
         self.resampler.orig_freq = fs_orig
         # TODO why it's needed to go with float ...
-        raw_target = self.resampler(raw_target.float()).double()
+        raw_target = self.resampler(raw_target.float().cpu()).to(DEVICE).double()
         raw_target = normalize_sound(raw_target)
 
         # Add noise to the raw ground truth to create the raw input
