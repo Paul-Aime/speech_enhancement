@@ -193,10 +193,8 @@ class CustomDataset(Dataset):
         else:
             return ('ERROR : unknown mode, must be one of str(test, train, validation)')
 
-        # for snd_id in np.random.permutation(snd_indices):
-        #     yield self[snd_id] # a batch is a full sound
-        
-        return [self[snd_id] for snd_id in np.random.permutation(snd_indices)]
+        for snd_id in np.random.permutation(snd_indices):
+            yield self[snd_id] # a batch is a full sound
 
     # ------------------------------------------------------------------
     # Dataset utilities
