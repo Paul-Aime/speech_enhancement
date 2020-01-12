@@ -1,5 +1,28 @@
 # speech_enhancement
 
+## Prereqisites
+
+Install conda and run :
+
+```bash
+conda env create -f cpu-environment.yml
+conda activate torch
+```
+
+or 
+
+```bash
+conda env create -f gpu-environment.yml
+conda activate torch-gpu
+```
+(tested with cuda 10.1)
+
+then
+
+```
+python train.py
+```
+
 ## Dataset
 
 ### Celui du prof
