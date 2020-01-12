@@ -6,7 +6,7 @@ import torch
 # from utils.cuda_utils import init_cuda
 
 if torch.cuda.is_available():
-    DEVICE = torch.device('cuda')
+    DEVICE = torch.device('cuda:0')
 else:
     DEVICE = torch.device('cpu')
 

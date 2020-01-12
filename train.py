@@ -12,7 +12,7 @@ from model.dataset import batchify
 # DEVICE = cuda_utils.init_cuda(verbose=True)
 
 if torch.cuda.is_available():
-    DEVICE = torch.device('cuda')
+    DEVICE = torch.device('cuda:0')
     print('Using GPU')
 else:
     DEVICE = torch.device('cpu')
