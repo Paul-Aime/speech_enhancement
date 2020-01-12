@@ -111,12 +111,12 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
             len_hist = torch.zeros(dataset_size)
 
             # Each sound is considered as a batch, keep only module
-            mm = 0  # early break for testing
+            # mm = 0  # early break for testing
             for i, ((x, _), (y, _)) in enumerate(data_set.batch_loader()):
 
-                mm += 1  # TODO withdraw early break
-                if mm > 30:
-                    break
+                # mm += 1  # TODO withdraw early break
+                # if mm > 3:
+                #     break
 
                 # Batchify x
                 X = batchify(x, params.n_frames)  # shape (B, C, H, W)
@@ -162,8 +162,8 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
                         mode, loss_mean, elapsed_t_str), end='\r')
 
                 # Register loss
-                # if i + 1 == dataset_size:
-                if True:  # When there are early stops for testing # TODO withdraw early break
+                if i + 1 == dataset_size:
+                # if True:  # When there are early stops for testing # TODO withdraw early break
                     if mode == 'train':
                         train_loss = loss_mean
                     else:
