@@ -110,29 +110,13 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
             loss_hist = torch.zeros(dataset_size)
             len_hist = torch.zeros(dataset_size)
 
-            #! killing generator syntax, for Google Cloud Platform
-            if data_set.mode == 'train':
-                snd_indices = np.arange(data_set.train_size)
-            elif data_set.mode == 'validation':
-                snd_indices = np.arange(data_set.train_size, len(data_set))
-            else:
-                return ('ERROR : unknown mode, must be one of str(test, train, validation)')
-
             # Each sound is considered as a batch, keep only module
             mm = 0  # early break for testing
-            # for i, ((x, _), (y, _)) in enumerate(data_set.batch_loader()):
-
-            for i, snd_id in enumerate(snd_indices):
+            for i, ((x, _), (y, _)) in enumerate(data_set.batch_loader()):
 
                 mm += 1  # TODO withdraw early break
                 if mm > 3:
                     break
-
-                #! killing generator syntax, for Google Cloud Platform
-                # for snd_id in np.random.permutation(snd_indices):
-                #     yield self[snd_id] # a batch is a full sound
-
-                (x, _), (y, _) = data_set[snd_id]
 
                 # Batchify x
                 X = batchify(x, params.n_frames)  # shape (B, C, H, W)
