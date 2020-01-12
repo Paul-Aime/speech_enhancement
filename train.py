@@ -158,8 +158,8 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
                     elapsed_t = datetime.datetime.now() - start_t
                     elapsed_t_str = '{:02.0f}:{:02.0f}  -- {:5.1f}%  #{:4d}/{:d}'.format(
                         *divmod(elapsed_t.seconds, 60), epoch_percent, i+1, dataset_size)
-                    print("  {} loss: {:.3f} (elapsed: {})".format(
-                        mode, loss_mean, elapsed_t_str), end='\r')
+                    print("  {} loss (x1000): {:.6f} (elapsed: {})".format(
+                        mode, loss_mean*1000, elapsed_t_str), end='\r')
 
                 # Register loss
                 if i + 1 == dataset_size:
@@ -171,8 +171,8 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
 
             # Re-print info, but not to be erased
             if verbose:
-                print("  {} loss: {:.3f} (elapsed: {})".format(
-                    mode, loss_mean, elapsed_t_str))
+                print("  {} loss (x1000): {:.6f} (elapsed: {})".format(
+                    mode, loss_mean*1000, elapsed_t_str))
 
         # --- Save model
 
