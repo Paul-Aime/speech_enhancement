@@ -1,5 +1,6 @@
 import datetime
 import copy
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -29,27 +30,10 @@ def main():
 
     params = params_utils.Params()
 
-    # --- Model
-    model = net.MyCNN(params)
-    optimizer = torch.optim.Adam(model.parameters(),
-                                 lr=params.learning_rate)
+    # Model : create (and load if params.load_model == True)
+    model, optimizer, chkpt_logs = net.get_model(params, verbose=verbose)
+    # Loss function should remain the same if loading a checkpoint
     loss_fn = torch.nn.MSELoss(reduction='mean')
-
-    # Print model's state_dict
-    if verbose:
-        print("\nModel's state_dict:")
-        for param_tensor in model.state_dict():
-            print(param_tensor, "\t\t", model.state_dict()
-                  [param_tensor].size())
-
-    # Load a checkpoint
-    chkpt_logs = None
-    if params.load_model:
-        saved_model_path = "./experiments/saved_models/experiment1/fs8000_snr1_nfft256_hop128/003_0-618.pt"
-        chkpt_logs = backup_utils.load_checkpoint(
-            model, optimizer, saved_model_path)
-        print('\nModel parameters updated with saved model :')
-        print('  ' + saved_model_path)
 
     # Datasets
     train_set = dataset.CustomDataset(params.train_raw_csv_path,
@@ -83,7 +67,7 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
 
         if verbose:
             start_t = datetime.datetime.now()
-            print('\n' + '='*50)
+            print('\n' + '='*70)
             # logs.epoch not yet up-to-date, hence `+1`
             print("epoch #{}".format(logs.epoch + 1))
 
@@ -163,7 +147,7 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
 
                 # Register loss
                 if i + 1 == dataset_size:
-                # if True:  # When there are early stops for testing # TODO withdraw early break
+                    # if True:  # When there are early stops for testing # TODO withdraw early break
                     if mode == 'train':
                         train_loss = loss_mean
                     else:

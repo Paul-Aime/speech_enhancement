@@ -1,5 +1,7 @@
+import os
 import torch
 import torch.nn as nn
+from utils.backup_utils import load_model
 
 # from utils.cuda_utils import init_cuda
 
@@ -26,7 +28,8 @@ class MyCNN(torch.nn.Module):
         # Architecture
         # To understand what will be the output size, see :
         # https://discuss.pytorch.org/t/how-to-keep-the-shape-of-input-and-output-same-when-dilation-conv/14338/2
-        self.enc_conv1 = self.ConvLayer(1, 12, kernel_size=(13, params.n_frames))
+        self.enc_conv1 = self.ConvLayer(
+            1, 12, kernel_size=(13, params.n_frames))
         self.enc_conv2 = self.ConvLayer(12, 16, kernel_size=(11, 1))
         self.enc_conv3 = self.ConvLayer(16, 20, kernel_size=(9, 1))
         self.enc_conv4 = self.ConvLayer(20, 24, kernel_size=(7, 1))
@@ -38,7 +41,8 @@ class MyCNN(torch.nn.Module):
         self.dec_conv3 = self.ConvLayer(20, 16, kernel_size=(11, 1))
         self.dec_conv4 = self.ConvLayer(16, 12, kernel_size=(13, 1))
 
-        self.out_conv = self.ConvLayer(12, 1, kernel_size=(params.n_fft//2 + 1, 1))
+        self.out_conv = self.ConvLayer(
+            12, 1, kernel_size=(params.n_fft//2 + 1, 1))
 
         self.double()
         self.to(DEVICE)
@@ -79,3 +83,29 @@ class MyCNN(torch.nn.Module):
         )
 
         return layer
+
+
+def get_model(params, verbose=True):
+
+    model = MyCNN(params)
+    optimizer = torch.optim.Adam(model.parameters(),
+                                 lr=params.learning_rate)
+    chkpt_logs = None
+
+    if verbose:
+        print("\nModel's state_dict:")
+        for param_tensor in model.state_dict():
+            print(param_tensor, "\t\t", model.state_dict()
+                  [param_tensor].size())
+
+    if params.load_model:
+        # max to get the last one in alphanumeric order
+        # more reliable than mtime because of copies
+        chkpt_name = max(os.listdir(params.model_saving_dir))
+        chkpt_path = os.path.join(params.model_saving_dir, chkpt_name)
+        chkpt_logs = load_model(model, optimizer, chkpt_path, verbose=False)
+
+        print('\nModel parameters updated with saved model :')
+        print('  ' + chkpt_path)
+
+    return model, optimizer, chkpt_logs
