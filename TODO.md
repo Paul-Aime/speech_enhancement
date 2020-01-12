@@ -1,32 +1,15 @@
 # TODO list
 
-## Prereqisites
+## Miscellaneous
 
-Install conda and run :
-
-```bash
-conda env create -f cpu-environment.yml
-conda activate torch
-```
-
-or 
-
-```bash
-conda env create -f cpu-environment.yml
-conda activate torch-gpu
-```
-
-then
-
-```
-python train.py
-```
+bash script to load outputs from GCP vm instance
 
 ## Code
 
-### Train / Validation
+### Test
 
-Séparer en train et validation, parce que la c'est train=train et validation=validation
+evaluation ET test : pas besoin de mélanger les idices pour le batch laoder, comme ça je pex récupérer le nom.
+mettre experimanets/out dans .gitignore ou un truc comme ça, là je vais enregistrer les spectro, les fichiers sons bruités et prédits
 
 ### Reconstruction du spectrogramme à partir d'un batch de sortie
 
