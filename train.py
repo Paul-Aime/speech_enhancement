@@ -30,7 +30,7 @@ def main():
 
     params = params_utils.Params()
     
-    params.load_model = False # TODO ensure can't load if params not same
+    params.load_model = True # TODO ensure can't load if params not same
     params.snr = -20 # dB
 
     # Model : create (and load if params.load_model == True)
