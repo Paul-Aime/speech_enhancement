@@ -30,8 +30,8 @@ def main():
 
     params = params_utils.Params()
     
-    params.load_model = True # TODO ensure can't load if params not same
-    params.snr = -20 # dB
+    params.load_model = False # TODO ensure can't load if params not same
+    params.snr = -5 # dB
 
     # Model : create (and load if params.load_model == True)
     model, optimizer, chkpt_logs = net.get_model(params, verbose=verbose)
