@@ -1,3 +1,6 @@
+########################################################################
+# Generic
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -104,7 +107,8 @@ venv.bak/
 .mypy_cache/
 
 
-
+########################################################################
+# Custom
 
 # data
 /data/raw
@@ -116,11 +120,10 @@ venv.bak/
 # IDE
 .vscode/
 
-# Dossiers test d'autres implémentations
-park2017*/
-
-# Saved models
+# Experiments
 experiments/saved_models
+experiments/signals
+experiments/spectrograms
 
 # GCP related
 experiments/download_from_gcp.sh
