@@ -41,11 +41,17 @@ class Params():
         self.test_noise_csv_name = 'test_noise.csv'
 
         # Backup
+        self.experiments_root = './experiments'
+        self.experiment_name = 'park2017_R-CED9'
+
         self.save_model = True
         self.load_model = False
-        self.backup_root = './experiments/saved_models'
-        self.backup_saving_dir = 'park2017_R-CED9'
-        
+
+        self.saved_models_dirname = 'saved_models'
+        self.spectrograms_dirname = 'spectrograms'
+        self.signals_dirname = 'signals'
+        self.metrics_dirname = 'metrics'
+
         self.__init_id_dict()
 
     # ------------------------------------------------------------------
@@ -61,6 +67,16 @@ class Params():
             "center": True,
             "dtype": np.complex64,
             "pad_mode": 'reflect'
+        }
+        
+    @property
+    def istft_kwargs(self):
+        stft_kwargs = self.stft_kwargs
+        return {
+            "hop_length": stft_kwargs['hop_length'],
+            "win_length": stft_kwargs['win_length'],
+            "window": stft_kwargs['window'],
+            "center": stft_kwargs['center']
         }
 
     # ------------------------------------------------------------------
@@ -119,33 +135,62 @@ class Params():
 
     # --- Backup
 
+    # - Roots
     @property
-    def model_saving_dir(self):
-        return os.path.join(self.backup_root, self.backup_saving_dir, self.model_id)
+    def saved_models_root(self):
+        return os.path.join(self.experiments_root, self.saved_models_dirname)
 
     @property
-    def best_model_copy_dir(self):
-        return os.path.join(self.backup_root, 'best', self.backup_saving_dir)
+    def spectrograms_root(self):
+        return os.path.join(self.experiments_root, self.spectrograms_dirname)
 
     @property
-    def best_model_copy_path(self):
-        return os.path.join(self.best_model_copy_dir, self.model_id + '.pt')
+    def signals_root(self):
+        return os.path.join(self.experiments_root, self.signals_dirname)
 
     @property
-    def last_model_copy_dir(self):
-        return os.path.join(self.backup_root, 'last', self.backup_saving_dir)
+    def metrics_root(self):
+        return os.path.join(self.experiments_root, self.metrics_dirname)
+
+    # - With params suffix
+    @property
+    def model_saving_dir(self):  # TODO model -> models
+        return os.path.join(self.saved_models_root, self.experiment_name, self.model_id)
+    
+    @property
+    def signals_saving_dir(self):
+        return os.path.join(self.signals_root, self.experiment_name, self.model_id)
 
     @property
-    def last_model_copy_path(self):
-        return os.path.join(self.last_model_copy_dir, self.model_id + '.pt')
+    def spectrograms_saving_dir(self):
+        return os.path.join(self.spectrograms_root, self.experiment_name, self.model_id)
 
-    @property
-    def pred_dir(self):
-        return os.path.join(self.data_root, self.pred_dir,
-                            self.backup_saving_dir, self.model_id)
+    def metrics_saving_dir(self, metric_name):
+        return os.path.join(self.metrics_root, metric_name, self.experiment_name, self.model_id)
 
-    def pred_path(self, sound_name, ext='.pred'):
-        return os.path.join(self.pred_dir, sound_name + ext)
+    # - With actual name (methods)
+    # TODO to replace `backup_utils.get_model_saving_path`
+    # def model_saving_path(self, epoch, loss):
+    #     loss_str = "".join([l if l != '.' else '-'
+    #                         for l in "{:.3f}".format(loss)])
+    #     return os.path.join(params.model_saving_dir, '{:03d}_{}.pt'.format(epoch, loss_str))
+    
+    # May not be useful
+    def signal_saving_path(self, sound_path_id, ext='.wav'):
+        return os.path.join(self.signals_saving_dir, sound_path_id + ext)
+    
+    # May not be useful
+    def spectrogram_saving_path(self, sound_path_id, ext='.png'):
+        return os.path.join(self.spectrograms_saving_dir, sound_path_id + ext)
+    
+    # May not be useful
+    def metric_saving_path(self, sound_path_id, metric_name):
+        return os.path.join(self.metrics_saving_dir(metric_name), sound_path_id)
+
+    # --- Output backup
+    # @property
+    # def spectrograms:
+    #     pass
 
     # TODO prediction will have a spectrogram and a time folder
     # TODO as noise is added on the fly, we also need to register the corresponding noisy data

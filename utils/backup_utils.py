@@ -57,7 +57,7 @@ def save_checkpoint(model, optimizer, loss, logs, params):
     return model_saving_path
 
 
-def get_model_saving_path(epoch, loss, params):
+def get_model_saving_path(epoch, loss, params): # TODO put in params class
 
     loss_str = "".join([l if l != '.' else '-'
                         for l in "{:.3f}".format(loss)])
