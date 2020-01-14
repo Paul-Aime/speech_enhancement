@@ -129,9 +129,23 @@ class CustomDataset(Dataset):
         self.snr = params.snr
         self.stft_kwargs = params.stft_kwargs
         self.params = params
+
+        # Sound indices for the given mode
         if mode != 'test':
             self.train_size = int(self.params.train_val_ratio * len(self))
             self.val_size = len(self) - self.train_size
+
+            if self.mode == 'train':
+                self.snd_indices = np.arange(self.train_size)
+            elif self.mode == 'validation':
+                self.snd_indices = np.arange(self.train_size, len(self))
+            else:
+                return ('ERROR : unknown mode, must be one of str(test, train, validation)')
+
+        elif self.mode == 'test':
+            self.snd_indices = np.arange(len(self))
+        else:
+            return ('ERROR : unknown mode, must be one of str(test, train, validation)')
 
         # Resampler
         self.resampler = torchaudio.transforms.Resample(new_freq=self.fs)
@@ -165,33 +179,47 @@ class CustomDataset(Dataset):
 
         # Add noise to the raw ground truth to create the raw input
         raw_in = self.add_noise(raw_target)
-        raw_in = normalize_sound(raw_in)
+        # raw_in = normalize_sound(raw_in)
+        # TODO
+        # Ne pas normaliser le signal bruité, ni la stft correspondante,
+        # car en faisant ainsi on diminue donc l'amplitude du signal
+        # clean, d'autant plus qu'on ajoute du bruit, donc on ne peut
+        # pas comparer le pred avec le clean sans renormaliser le pred,
+        # et donc au final on perd toute possibilité de comparé la perte
+        # gloable d'amplitude, aka les faux positifs
+        # (débruitage alors qu'il fallait pas)
 
         # Convert to time-frequency domain using STFT
-        x = stft(raw_in, **self.stft_kwargs)
-        y = stft(raw_target, **self.stft_kwargs)
+        x_abs, x_ang = stft(raw_in, **self.stft_kwargs)  # tuple (x_abs, x_ang)
+        y_abs, y_ang = stft(raw_target, **self.stft_kwargs)  # tuple (y_abs, y_ang)
+        
+        x_abs = normalize_stft(x_abs, mode='max')
+        x_ang = normalize_stft(x_ang, mode='max')
+        
+        y_abs = normalize_stft(y_abs, mode='max')
+        y_ang = normalize_stft(y_ang, mode='max')
 
-        assert x[0].device == DEVICE
+        assert x_abs.device == DEVICE
 
-        return x, y
+        return (raw_in, raw_target), (x_abs, x_ang), (y_abs, y_ang)
 
     # ------------------------------------------------------------------
     # Dataloader utilities
 
     def batch_loader(self):
 
-        # TODO make snd_indices an attribute, only permute when mode train
         if self.mode == 'train':
-            snd_indices = np.random.permutation(np.arange(self.train_size))
-        elif self.mode == 'validation':
-            snd_indices = np.arange(self.train_size, len(self))
-        elif self.mode == 'test':
-            snd_indices = np.arange(len(self))
-        else:
-            return ('ERROR : unknown mode, must be one of str(test, train, validation)')
+            self.snd_indices = np.random.permutation(self.snd_indices)
 
-        for snd_id in snd_indices:
+        for snd_id in self.snd_indices:
             yield self[snd_id]  # a batch is a full sound
+
+    def get_sound_path_id(self, idx):
+        sound_path = self.raw_paths[idx]
+        # Remove base folder # TODO do it better than that hardcoded 3
+        sound_path = os.path.join(*sound_path.split('/')[-3:])
+        # Remove extension
+        return os.path.splitext(sound_path)[0]
 
     # ------------------------------------------------------------------
     # Dataset utilities
@@ -286,28 +314,30 @@ def stft(x, **kwargs):
     """
     Only for 1xL tensors, i.e. C = 1
     https://librosa.github.io/librosa/generated/librosa.core.stft.html#librosa-core-stft
+    
+    S_abs is the magnitude of frequency bin f at frame t
+    
+    The integers t and f can be converted to physical units by means of
+    the utility functions frames_to_sample and fft_frequencies.
+    
     """
-    S = librosa_stft(x[0].cpu().numpy(), **kwargs)
+    S = librosa_stft(x.squeeze().cpu().numpy(), **kwargs)
     S_abs = torch.tensor(np.abs(S), dtype=torch.double,
                          device=DEVICE).unsqueeze(dim=0)
     S_ang = torch.tensor(np.angle(S), dtype=torch.double,
                          device=DEVICE).unsqueeze(dim=0)
 
-    S_abs = normalize_stft(S_abs, mode='max')
-    S_ang = normalize_stft(S_ang, mode='max')
-
     return S_abs, S_ang
 
 
-def istft(S_module, S_angle, **kwargs):
+def istft(S_module, S_angle, length=None, **kwargs):
     """
     Only for 1xL tensors, i.e. C = 1
     https://librosa.github.io/librosa/generated/librosa.core.istft.html#librosa.core.istft
     """
-    # TODO reconstruct S from S_module and S_angle
-    # TODO use librosa_istft
-    # S = normalize(S, (S.mean(),), (S.std(),))  # TODO check normalization
-    return 1
+    S_module = S_module.squeeze().numpy()
+    S_angle = S_angle.squeeze().numpy()
+    return librosa_istft(S_module + 1j * S_angle, length=length, **kwargs)
 
 
 def add_noise_snr(sig, noise, snr):
