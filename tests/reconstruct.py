@@ -37,37 +37,56 @@ def main():
 
     # --- The way used in the code
     S_abs, S_ang = stft(x, **stft_kwargs)
-    
-    S_abs = normalize_stft(S_abs)
-    S_ang = normalize_stft(S_ang)
-    
+
+    # S_abs = normalize_stft(S_abs)
+    # S_ang = normalize_stft(S_ang)
+
     y = istft(S_abs, S_ang, length=None, **istft_kwargs)
     y = torch.as_tensor(y, dtype=torch.double).unsqueeze(0)
     y = normalize_sound(y, inplace=True)
-    
+
     # --- Using directly librosa
-    y_librosa = librosa_istft(librosa_stft(x.squeeze().numpy(), **stft_kwargs), **istft_kwargs)
-    
+    y_librosa = librosa_istft(librosa_stft(
+        x.squeeze().numpy(), **stft_kwargs), **istft_kwargs)
+
     # --- Compute snr between both
-    snr = 10*np.log10(np.mean(y_librosa**2) / np.mean((y_librosa-y.squeeze().numpy())**2))
-    print('SNR [dB] = ', snr)
-    
+    print('SNR [dB] between both reconstructions: ',
+          snr(torch.as_tensor(y_librosa), y).item())
+    print('                     SNR [dB] librosa: ',
+          snr(x, torch.as_tensor(y_librosa)).item())
+    print('                        SNR [dB] ours: ',
+          snr(x, y).item())
+
     # --- Figure
     fig, (ax1, ax2, ax3) = plt.subplots(nrows=3, ncols=1)
-    
+
     ax1.plot(x.squeeze())
     ax1.set_title('Original signal')
-    
+
     ax2.plot(y.squeeze())
     ax2.set_title('Retrieved from code method')
-    
+
     ax3.plot(y_librosa)
-    ax3.set_title('Retrieved from straightforward istft(stft(.)), only librosa')
-    
+    ax3.set_title(
+        'Retrieved from straightforward istft(stft(.)), only librosa')
+
     plt.tight_layout()
     plt.show()
-    
+
     a = 2
+
+
+def snr(x, y, mode='dB'):
+    x, y = x.squeeze(), y.squeeze()
+
+    diff = x-y
+
+    snr_ = ((x-x.mean())**2).sum() / ((diff-diff.mean())**2).sum()
+
+    if mode.lower() == 'db':
+        snr_ = 10 * np.log10(snr_)
+
+    return snr_
 
 
 if __name__ == "__main__":
