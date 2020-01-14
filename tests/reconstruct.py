@@ -1,109 +1,67 @@
-"""
-As it is, the model input and output have the same shape.
-There are 4 ways to proceed then :
-
-#1 Keep it as it is, but putting a stride (=step) params in
-the batchify function, putting it equals to nframes,
-s.t. there is no overlapping
-
-#2 Keep it as it is, adding the stride params to the
-batchify function, but with stride < nframes, thus making
-overlapping between windows, which has to be taen into
-account for the reconstruction
-
-#3 Only tak one frame (the middle one) form the ouput, may
-be the easiest, but then : do we compute the loss only on
-this frame or on the whole output, even if only taking the
-middle frame for reconstruction
-
-#4 Finally, we may want to compute the loss on y, not Y,
-such that whatever the reconstruction method used, it is
-taken into account, because then the general loss on the
-reconstructed spectro is what matters. It may be the best.
-
-Here we try to implement the option #4
-"""
 import torch
+import numpy as np
+import matplotlib.pyplot as plt
+from librosa.core import stft as librosa_stft
+from librosa.core import istft as librosa_istft
 
-# TODO add an alignement param : 'left', 'right' or 'center'.
-# Here only 'center' version is implemented
+if True:  # Not to break code order with autoformatter
+    # Needed here, and not under ifmain, because @time decorator is imported
+    # https://stackoverflow.com/a/27876800/10076676
+    import sys
+    from os import path
+    sys.path.insert(1, path.dirname(path.dirname(path.abspath(__file__))))
+    from model.dataset import stft, istft, normalize_sound, normalize_stft
 
 
 def main():
+    signame = './tests/data/SA1_noisy.signal'
+    x = torch.load(signame)
 
-    # Params
-    nfft = 10
-    nframes = 3
-    N = 3
+    stft_kwargs = {
+        "n_fft": 256,
+        "hop_length": 256 // 2,
+        "win_length": None,
+        "window": torch.hann_window(256).numpy(),
+        "center": True,
+        "dtype": np.complex64,
+        "pad_mode": 'reflect'
+    }
 
-    # STFT
-    x = torch.randint(0, 10, (1, nfft, N))
+    istft_kwargs = {
+        "hop_length": stft_kwargs['hop_length'],
+        "win_length": stft_kwargs['win_length'],
+        "window": stft_kwargs['window'],
+        "center": stft_kwargs['center']
+    }
 
-    # Pad x such that X will have the same length
-    n_padding_frames = int((nframes-1)/2)
-    x_pad = pad(x, n_padding_frames)
-
-    Y = batchify(x_pad, nframes)
-    y = reconstruct(Y)
-
-    # Print
-    print(x.shape)
-    print(x)
-    print('\n\n')
-    print(x_pad.shape)
-    print(x_pad)
-    print('\n\n')
-    print(Y.shape)
-    print(Y)
-    print('\n\n')
-    print(y.shape)
-    print(y)
-
-
-def reconstruct(X, apodisation=None):
-    # TODO add apodisation, alignement and stride arguments
-
-    # TODO
-    # If apodisation is None, it means that we only keep one
-    # frame for each output
-    # Else, we need to do an overlapping summation
-
-    # X of shape (B, C, H, W), with C=1
-    # output of shape (C, H, B) in our case (i.e. stride=1, otherwise third dim < B, or idk yet)
-
-    # nframes need to be odd, it's easier
-    nframes = X.shape[3]
-
-    # case for alignment == 'center' and apodisation == None
-    idx_to_keep = int((nframes - 1) / 2)
+    # --- The way used in the code
+    S_abs, S_ang = stft(x, **stft_kwargs)
     
-    x = X[:, 0, :, idx_to_keep].T.unsqueeze(0)
+    # S_abs = normalize_stft(S_abs)
+    # S_ang = normalize_stft(S_ang)
     
-    return x
+    y = istft(S_abs, S_ang, length=None, **istft_kwargs)
+    y = torch.as_tensor(y, dtype=torch.double).unsqueeze(0)
+    # y = dataset.normalize_sound(y, inplace=True)
     
+    # --- Using directly librosa
+    y_librosa = librosa_istft(librosa_stft(x.squeeze().numpy(), **stft_kwargs), **istft_kwargs)
     
+    # --- Figure
+    fig, (ax1, ax2, ax3) = plt.subplots(nrows=3, ncols=1)
     
-
-
-def batchify(x, nframes):
-
-    # nframes is the number of frames per input sample
-    # c = x.shape[0] # Number of channels
-    # h = x.shape[1]  # Height of the STFT, equals to nfft//2 +1
-    w = x.shape[2]  # Width of the STFT, equals to the total number of frames
-
-    X = torch.stack(tuple(x[0, :, i:i+nframes]
-                          for i in range(w - nframes + 1)),
-                    0).unsqueeze(dim=1)
-
-    return X
-
-
-def pad(x, nframes):
-    # padding nframes to the left and the rigth, by simple replication
-    # shape of x : (C, H, W)
-
-    return torch.cat((x[:, :, :nframes], x, x[:, :, -nframes:]), dim=2)
+    ax1.plot(x.squeeze())
+    ax1.set_title('Original signal')
+    
+    ax2.plot(y.squeeze())
+    ax2.set_title('Retrieved from code method')
+    
+    ax3.plot(y_librosa)
+    ax3.set_title('Retrieved from starightforward istft(stft(.)), only librosa')
+    
+    plt.show()
+    
+    a = 2
 
 
 if __name__ == "__main__":

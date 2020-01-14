@@ -34,8 +34,6 @@ def main():
     fig.colorbar(im3, cax=cax, orientation='vertical')
     
     plt.show()
-    
-    a = 2
 
 
 def normalize_stft(S, mode='std', inplace=True):

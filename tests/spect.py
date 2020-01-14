@@ -33,7 +33,7 @@ if True:  # Not to break code order with autoformatter
     from utils.utils import time
     from utils.wavutils import read_wav
 
-ACTIVATED = False
+ACTIVATED = False # timeit or not
 NUMBER = 100
 
 
