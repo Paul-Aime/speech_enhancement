@@ -97,7 +97,8 @@ def train(model, optimizer, loss_fn, train_set, val_set, params,
 
             # Each sound is considered as a batch, keep only module
             # mm = 0  # early break for testing
-            for i, ((x, _), (y, _)) in enumerate(data_set.batch_loader()):
+            for i, ((_, _), (x, _), (y, _)) in enumerate(data_set.batch_loader()):
+                # Throw waves and angle of spectrograms
 
                 # mm += 1  # TODO withdraw early break
                 # if mm > 3:
