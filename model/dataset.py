@@ -337,7 +337,8 @@ def istft(S_module, S_angle, length=None, **kwargs):
     """
     S_module = S_module.squeeze().numpy()
     S_angle = S_angle.squeeze().numpy()
-    return librosa_istft(S_module + 1j * S_angle, length=length, **kwargs)
+    S_complex = S_module * np.exp(1j * S_angle)
+    return librosa_istft(S_complex, length=length, **kwargs)
 
 
 def add_noise_snr(sig, noise, snr):

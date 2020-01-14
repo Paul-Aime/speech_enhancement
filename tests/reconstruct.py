@@ -16,6 +16,7 @@ if True:  # Not to break code order with autoformatter
 def main():
     signame = './tests/data/SA1_noisy.signal'
     x = torch.load(signame)
+    x = normalize_sound(x)
 
     stft_kwargs = {
         "n_fft": 256,
@@ -37,15 +38,19 @@ def main():
     # --- The way used in the code
     S_abs, S_ang = stft(x, **stft_kwargs)
     
-    # S_abs = normalize_stft(S_abs)
-    # S_ang = normalize_stft(S_ang)
+    S_abs = normalize_stft(S_abs)
+    S_ang = normalize_stft(S_ang)
     
     y = istft(S_abs, S_ang, length=None, **istft_kwargs)
     y = torch.as_tensor(y, dtype=torch.double).unsqueeze(0)
-    # y = dataset.normalize_sound(y, inplace=True)
+    y = normalize_sound(y, inplace=True)
     
     # --- Using directly librosa
     y_librosa = librosa_istft(librosa_stft(x.squeeze().numpy(), **stft_kwargs), **istft_kwargs)
+    
+    # --- Compute snr between both
+    snr = 10*np.log10(np.mean(y_librosa**2) / np.mean((y_librosa-y.squeeze().numpy())**2))
+    print('SNR [dB] = ', snr)
     
     # --- Figure
     fig, (ax1, ax2, ax3) = plt.subplots(nrows=3, ncols=1)
@@ -57,8 +62,9 @@ def main():
     ax2.set_title('Retrieved from code method')
     
     ax3.plot(y_librosa)
-    ax3.set_title('Retrieved from starightforward istft(stft(.)), only librosa')
+    ax3.set_title('Retrieved from straightforward istft(stft(.)), only librosa')
     
+    plt.tight_layout()
     plt.show()
     
     a = 2
