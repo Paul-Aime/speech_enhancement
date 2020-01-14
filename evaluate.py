@@ -77,7 +77,7 @@ def test(model, loss_fn, data_set, params, save_out=False, verbose=True):
         mm = 0
 
     # Each sound is considered as a batch, keep only module
-    for i, ((sig_x, sig_y), (x_abs, x_ang), (y_abs, y_ang)) in enumerate(data_set.batch_loader()):
+    for i, ((sig_noisy, sig_clean), (x_abs, x_ang), (y_abs, y_ang)) in enumerate(data_set.batch_loader()):
 
         if EARLY_BREAK:
             mm += 1
@@ -97,11 +97,6 @@ def test(model, loss_fn, data_set, params, save_out=False, verbose=True):
 
         # Go from batch to reconstructed STFT
         y_pred = Y_pred.squeeze().T.unsqueeze(0)
-        
-        # Reconstruct signal from STFT
-        sig_pred = reconstruct_signal(y_abs, y_ang, params, length=sig_y.shape[-1])
-        if not sig_pred.shape[-1] == sig_x.shape[-1] == sig_y.shape[-1]:
-            print('Reconstructed signal has not the same shape as original.')
 
         # Compute loss
         loss = loss_fn(y_abs, y_pred)
@@ -121,16 +116,29 @@ def test(model, loss_fn, data_set, params, save_out=False, verbose=True):
             print("  loss (x1000): {:.6f} (elapsed: {})".format(
                 loss.data*1000, elapsed_t_str), end='\n')
 
+        # Reconstruct signal from STFT
+        length = sig_clean.shape[-1]  # ensure y_pred has good length
+        # length = None
+        sig_pred = reconstruct_signal(y_abs, y_ang, params, length=length)
+        if not sig_pred.shape[-1] == sig_noisy.shape[-1] == sig_clean.shape[-1]:
+            print('Reconstructed signal has not the same shape as original.')
+
+        # Compute metrics
+        metrics_names = ['snr_clean_vs_noisy',
+                         'snr_clean_vs_pred',
+                         'snr_pred_vs_noisy']
+        metrics = compute_metrics(
+            sig_clean, sig_noisy, sig_pred, metrics_names)
+
         # Save outputs
         if save_out:
 
-            save_outputs((sig_x, sig_pred), (x_abs, y_pred), sound_path_id, params,
+            save_outputs((sig_noisy, sig_pred), (x_abs, y_pred), sound_path_id, params,
                          modes=('noisy', 'pred'))
 
-            # TODO also save losses
+            save_metrics(metrics, metrics_names, sound_path_id, params)
 
-            # TODO + compute metric before
-            # save_metrics(metrics, metrics_names, sound_path_id, params)
+            # TODO also save losses
 
     # Print mean loss over all sounds
     loss_mean = torch.sum(loss_hist * len_hist) / len_hist.sum()
@@ -143,8 +151,39 @@ def test(model, loss_fn, data_set, params, save_out=False, verbose=True):
 ###############################################################################
 # Metrics
 
-def metric1():
-    pass
+def compute_metrics(sig_clean, sig_noisy, sig_pred, metrics_names):
+
+    # TODO retrieve noise added to create sig_noisy, because of normalizations...
+
+    metrics = []
+    for m_name in metrics_names:
+
+        if m_name == 'snr_clean_vs_noisy':
+            m = snr(sig_clean, sig_noisy)
+        elif m_name == 'snr_clean_vs_pred':
+            m = snr(sig_clean, sig_pred)
+        elif m_name == 'snr_pred_vs_noisy':
+            m = snr(sig_pred, sig_noisy)
+        else:
+            print('ERROR: metric unknown.')
+            return
+
+        metrics.append(m)
+
+    return metrics
+
+
+def snr(x, y, mode='dB'):
+    x, y = x.squeeze(), y.squeeze()
+
+    diff = x-y
+
+    snr_ = ((x-x.mean())**2).sum() / ((diff-diff.mean())**2).sum()
+
+    if mode.lower() == 'db':
+        snr_ = 10 * np.log10(snr_)
+
+    return snr_
 
 
 ###############################################################################
@@ -165,7 +204,8 @@ def save_outputs(signals, spectrograms, sound_path_id, params,
         if not os.path.isdir(os.path.dirname(signal_path)):
             os.makedirs(os.path.dirname(signal_path))
         torch.save(signal, signal_path + '.signal')
-        wavfile.write(signal_path + '.wav', int(params.fs), signal.squeeze().numpy())
+        wavfile.write(signal_path + '.wav', int(params.fs),
+                      signal.squeeze().numpy())
 
         # Save spectrogram
         spectrogram_dir = params.spectrograms_saving_dir
@@ -178,13 +218,16 @@ def save_outputs(signals, spectrograms, sound_path_id, params,
 
 def save_metrics(metrics, metrics_names, sound_path_id, params):
     # metrics and metrics_names are sequences
-    # TODO handle for only 1 metric (metrics_naes not a sequence)
     assert len(metrics) == len(metrics_names)
 
     for metric, metric_name in zip(metrics, metrics_names):
-        mt_sv_p = params.metric_saving_path(sound_path_id, metric_name)
+        mt_sv_dir = params.metrics_saving_dir(metric_name)
+        mt_sv_path = os.path.join(mt_sv_dir, sound_path_id + '.mt')
 
-        # TODO save metric
+        if not os.path.isdir(os.path.dirname(mt_sv_path)):
+            os.makedirs(os.path.dirname(mt_sv_path))
+
+        torch.save(metric, mt_sv_path)
 
 
 def save_spectrogram(spectrogram, saving_path, params):
@@ -201,7 +244,6 @@ def save_spectrogram(spectrogram, saving_path, params):
                    vmin=0, vmax=1)
     ax.set_xlabel('STFT frame number')
     ax.set_ylabel('Frequencies')
-    ax.set_title('Custom')
 
     yticks_step_in_hz = 500
     yticks_hz = np.arange(0, fs/2+1, yticks_step_in_hz)
@@ -216,19 +258,20 @@ def save_spectrogram(spectrogram, saving_path, params):
     plt.tight_layout()
 
     if not os.path.isdir(os.path.dirname(saving_path)):
-        os.makedirs(params.signal_saving_dir)
+        os.makedirs(os.path.dirname(saving_path))
 
     plt.savefig(saving_path)
 
 ###############################################################################
 # Functions
 
+
 def reconstruct_signal(S_abs, S_ang, params, length=None):
     y = dataset.istft(S_abs, S_ang, length=length, **params.istft_kwargs)
     y = torch.as_tensor(y, dtype=torch.double).unsqueeze(0)
     y = dataset.normalize_sound(y, inplace=True)
     return y
-    
+
 
 ###############################################################################
 # Main
