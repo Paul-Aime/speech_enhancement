@@ -183,7 +183,7 @@ def snr(x, y, mode='dB'):
     snr_ = ((x-x.mean())**2).sum() / ((diff-diff.mean())**2).sum()
 
     if mode.lower() == 'db':
-        snr_ = 10 * np.log10(snr_)
+        snr_ = 10 * torch.log10(snr_)
 
     return snr_
 
