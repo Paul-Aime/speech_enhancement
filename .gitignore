@@ -127,4 +127,7 @@ experiments/spectrograms
 experiments/metrics/snr*
 
 # GCP related
-experiments/download_from_gcp.sh
+experiments/download_saved_models_from_gcp.sh
+experiments/download_metrics_from_gcp.sh
+experiments/download_spectrograms_from_gcp.sh
+experiments/download_signals_from_gcp.sh
