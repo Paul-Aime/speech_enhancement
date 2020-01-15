@@ -266,6 +266,7 @@ def save_spectrogram(spectrogram, saving_path, params):
         os.makedirs(os.path.dirname(saving_path))
 
     plt.savefig(saving_path)
+    plt.close(fig)
 
 ###############################################################################
 # Functions

@@ -23,7 +23,7 @@ def main():
     params = Params()
     saved_models_root = params.saved_models_root
 
-    for root, dirs, files in os.walk(saved_models_root):
+    for root, _, files in os.walk(saved_models_root):
         if any((f for f in files if f.endswith('.pt'))):
 
             fig, ax = plt.subplots(nrows=1, ncols=1)
@@ -37,9 +37,10 @@ def main():
 
             plt.tight_layout()
             # plt.show()
-            if not(os.path.isdir(os.path.dirname(saving_path))):
+            if not os.path.isdir(os.path.dirname(saving_path)):
                 os.makedirs(os.path.dirname(saving_path))
             plt.savefig(saving_path)
+            plt.close(fig)
 
 
 def plot_model_logs_hist(model_root, chkpt_name='auto', ax=None, show=True):
