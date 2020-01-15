@@ -21,7 +21,7 @@ else:
     DEVICE = torch.device('cpu')
     print('Using CPU')
 
-EARLY_BREAK = True
+EARLY_BREAK = False
 # TODO use an erase flag, to erase previous output files,
 # in order to be able to add metrics etc., in which case we need to
 # recompute all because data is mixed on the fly
