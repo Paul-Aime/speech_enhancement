@@ -125,6 +125,7 @@ experiments/saved_models
 experiments/signals
 experiments/spectrograms
 experiments/metrics/snr*
+experiments/metrics/loss/
 
 # GCP related
 experiments/download_saved_models_from_gcp.sh

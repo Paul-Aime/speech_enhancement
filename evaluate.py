@@ -21,7 +21,10 @@ else:
     DEVICE = torch.device('cpu')
     print('Using CPU')
 
-EARLY_BREAK = False
+EARLY_BREAK = True
+# TODO use an erase flag, to erase previous output files,
+# in order to be able to add metrics etc., in which case we need to
+# recompute all because data is mixed on the fly
 
 ###############################################################################
 # Main
@@ -72,6 +75,7 @@ def test(model, loss_fn, data_set, params, save_out=False, verbose=True):
     # To compute mean loss
     loss_hist = torch.zeros(dataset_size)
     len_hist = torch.zeros(dataset_size)
+    snd_id_hist = []
 
     # Early break for quick testing
     if EARLY_BREAK:
@@ -88,6 +92,7 @@ def test(model, loss_fn, data_set, params, save_out=False, verbose=True):
         # Get sound ID
         # for test and validaton mode, `data_set.snd_indices[i] == i`, but still
         sound_path_id = data_set.get_sound_path_id(data_set.snd_indices[i])
+        snd_id_hist.append(sound_path_id)
 
         # Batchify x
         X = batchify(x_abs, params.n_frames)  # shape (B, C, H, W)
@@ -140,12 +145,26 @@ def test(model, loss_fn, data_set, params, save_out=False, verbose=True):
 
             save_metrics(metrics, metrics_names, sound_path_id, params)
 
-            # TODO also save losses
-
     # Print mean loss over all sounds
     loss_mean = torch.sum(loss_hist * len_hist) / len_hist.sum()
     if verbose:
-        print("\n  mean loss (x1000): {:.6f}".format(loss.data*1000))
+        print("\n  mean loss (x1000): {:.6f}".format(loss_mean.data*1000))
+
+    if save_out:  # loss
+        loss_path = os.path.join(params.metrics_root, 'loss',
+                                 params.experiment_name,
+                                 params.model_id + '.loss')
+        if not os.path.exists(loss_path):
+
+            if not os.path.isdir(os.path.dirname(loss_path)):
+                os.makedirs(os.path.dirname(loss_path))
+
+            torch.save({
+                "mean_loss": loss_mean,
+                "loss": loss_hist[:len(snd_id_hist)],
+                "sound_len": len_hist[:len(snd_id_hist)],
+                "sound_id": snd_id_hist
+            }, loss_path)
 
     return loss_mean, loss_hist, len_hist
 
