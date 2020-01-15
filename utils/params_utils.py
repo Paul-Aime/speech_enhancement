@@ -154,7 +154,7 @@ class Params():
 
     # - With params suffix
     @property
-    def model_saving_dir(self):  # TODO model -> models
+    def model_saving_dir(self):  # TODO model <- models
         return os.path.join(self.saved_models_root, self.experiment_name, self.model_id)
     
     @property
@@ -184,7 +184,7 @@ class Params():
         return os.path.join(self.spectrograms_saving_dir, sound_path_id + ext)
     
     # May not be useful
-    def metric_saving_path(self, sound_path_id, metric_name):
+    def metric_saving_path(self, metric_name, sound_path_id):
         return os.path.join(self.metrics_saving_dir(metric_name), sound_path_id)
 
     # --- Output backup
