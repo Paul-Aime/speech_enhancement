@@ -29,9 +29,9 @@ def main():
     verbose = True
 
     params = params_utils.Params()
-    
-    params.load_model = False # TODO ensure can't load if params not same
-    params.snr = 0 # dB
+
+    params.load_model = False  # TODO ensure can't load if params not same
+    params.snr = 0  # dB
 
     # Model : create (and load if params.load_model == True)
     model, optimizer, chkpt_logs = net.get_model(params, verbose=verbose)
@@ -202,6 +202,17 @@ class TrainingHistory():
 
     # ---------------------------------------------------------------- #
     @property
+    def early_stop(self):
+
+        if len(self.val_loss) <= self.patience:
+            return False
+
+        val_loss_min = min(self.val_loss)
+        val_loss_late_min = min(self.val_loss[-self.patience:])
+
+        return bool(val_loss_late_min > ((1 + self.margin) * val_loss_min))
+
+    @property
     def best_model_path(self):
 
         if not self.early_stop:
@@ -222,17 +233,6 @@ class TrainingHistory():
     @property
     def saved_models_paths(self):
         return self.__saved_models_paths
-
-    @property
-    def early_stop(self):
-
-        if len(self.val_loss) <= self.patience:
-            return False
-
-        val_loss_min = min(self.val_loss)
-        val_loss_late_min = min(self.val_loss[-self.patience:])
-
-        return bool(val_loss_late_min > ((1 + self.margin) * val_loss_min))
 
     @property
     def train_loss(self):
