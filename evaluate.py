@@ -241,7 +241,7 @@ def save_spectrogram(spectrogram, saving_path, params):
     # im = ax.imshow(spectrogram.squeeze(),
     #                origin='lower',
     #                cmap=plt.get_cmap('magma'))
-    im = ax.pcolor(spectrogram.squeeze(),
+    im = ax.pcolor(spectrogram.squeeze().cpu().numpy(),
                    cmap=plt.get_cmap('magma'),
                    vmin=0, vmax=1)
     ax.set_xlabel('STFT frame number',
