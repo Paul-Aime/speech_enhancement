@@ -265,8 +265,8 @@ def istft(S_module, S_angle, length=None, **kwargs):
     Only for 1xL tensors, i.e. C = 1
     https://librosa.github.io/librosa/generated/librosa.core.istft.html#librosa.core.istft
     """
-    S_module = S_module.squeeze().numpy()
-    S_angle = S_angle.squeeze().numpy()
+    S_module = S_module.squeeze().cpu().numpy()
+    S_angle = S_angle.squeeze().cpu().numpy()
     S_complex = S_module * np.exp(1j * S_angle)
     return librosa_istft(S_complex, length=length, **kwargs)
 

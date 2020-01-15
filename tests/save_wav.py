@@ -8,10 +8,10 @@ def main():
     signal = torch.load('./tests/SA1.signal')
     
     plt.figure()
-    plt.plot(signal.squeeze().numpy())
+    plt.plot(signal.squeeze().cpu().numpy())
     plt.show()
     
-    wavfile.write('./tests/SA1_write.wav', fs, signal.squeeze().numpy())
+    wavfile.write('./tests/SA1_write.wav', fs, signal.squeeze().cpu().numpy())
 
 
 if __name__ == "__main__":

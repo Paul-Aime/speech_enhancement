@@ -26,7 +26,7 @@ class Params():
         self.n_fft = 256
         self.hop_length = self.n_fft // 2
         # 'hann', # TODO make a string, to be accessible from id_dict
-        self.window = torch.hann_window(self.n_fft).numpy()
+        self.window = torch.hann_window(self.n_fft).cpu().numpy()
 
         # --- Paths
 

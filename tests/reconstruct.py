@@ -22,7 +22,7 @@ def main():
         "n_fft": 256,
         "hop_length": 256 // 2,
         "win_length": None,
-        "window": torch.hann_window(256).numpy(),
+        "window": torch.hann_window(256).cpu().numpy(),
         "center": True,
         "dtype": np.complex64,
         "pad_mode": 'reflect'
@@ -47,7 +47,7 @@ def main():
 
     # --- Using directly librosa
     y_librosa = librosa_istft(librosa_stft(
-        x.squeeze().numpy(), **stft_kwargs), **istft_kwargs)
+        x.squeeze().cpu().numpy(), **stft_kwargs), **istft_kwargs)
 
     # --- Compute snr between both
     print('SNR [dB] between both reconstructions: ',

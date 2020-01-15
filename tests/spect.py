@@ -105,7 +105,7 @@ def main():
     # scipy.signal.spectrogram
     spec_scipy_kwargs = {
         "fs": fs,
-        "window": torch.hann_window(n_fft).numpy(),  # 'hanning',
+        "window": torch.hann_window(n_fft).cpu().numpy(),  # 'hanning',
         "nperseg": n_fft,
         "noverlap": n_overlap,
         "nfft": None,
@@ -119,7 +119,7 @@ def main():
     # scipy.signal.stft
     spec_scipy_stft_kwargs = {
         "fs": fs,
-        "window": torch.hann_window(n_fft).numpy(),  # 'hann',
+        "window": torch.hann_window(n_fft).cpu().numpy(),  # 'hann',
         "nperseg": n_fft,
         "noverlap": n_overlap,
         "nfft": None,
@@ -135,7 +135,7 @@ def main():
         "n_fft": n_fft,
         "hop_length": hop_length,
         "win_length": None,
-        "window": torch.hann_window(n_fft).numpy(),  # 'hann',
+        "window": torch.hann_window(n_fft).cpu().numpy(),  # 'hann',
         "center": True,
         "dtype": np.complex64,
         "pad_mode": 'reflect'  # 'reflect'

@@ -207,7 +207,7 @@ def save_outputs(signals, spectrograms, sound_path_id, params,
             os.makedirs(os.path.dirname(signal_path))
         torch.save(signal, signal_path + '.signal')
         wavfile.write(signal_path + '.wav', int(params.fs),
-                      signal.squeeze().numpy())
+                      signal.squeeze().cpu().numpy())
 
         # Save spectrogram
         spectrogram_dir = params.spectrograms_saving_dir
