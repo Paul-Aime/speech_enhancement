@@ -103,8 +103,8 @@ class CustomDataset(Dataset):
         raw_target, fs_orig = read_wav(self.raw_paths[index])
         self.resampler.orig_freq = fs_orig
         # TODO why it's needed to go with float ...
-        raw_target = self.resampler(
-            raw_target.float().cpu()).to(DEVICE).double()
+        raw_target = self.resampler(raw_target.float().cpu())
+        raw_target= raw_target.to(DEVICE).double()
         raw_target = normalize_sound(raw_target)
 
         # Add noise to the raw ground truth to create the raw input
@@ -268,7 +268,8 @@ def istft(S_module, S_angle, length=None, **kwargs):
     S_module = S_module.squeeze().cpu().numpy()
     S_angle = S_angle.squeeze().cpu().numpy()
     S_complex = S_module * np.exp(1j * S_angle)
-    return librosa_istft(S_complex, length=length, **kwargs)
+    y = librosa_istft(S_complex, length=length, **kwargs)
+    return torch.as_tensor(y, device=DEVICE)
 
 
 def add_noise_snr(sig, noise, snr):

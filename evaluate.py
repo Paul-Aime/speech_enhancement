@@ -273,7 +273,7 @@ def save_spectrogram(spectrogram, saving_path, params):
 
 def reconstruct_signal(S_abs, S_ang, params, length=None):
     y = dataset.istft(S_abs, S_ang, length=length, **params.istft_kwargs)
-    y = torch.as_tensor(y, dtype=torch.double).unsqueeze(0)
+    y = y.unsqueeze(0)
     y = dataset.normalize_sound(y, inplace=True)
     return y
 
