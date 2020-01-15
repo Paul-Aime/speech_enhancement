@@ -124,6 +124,7 @@ venv.bak/
 experiments/saved_models
 experiments/signals
 experiments/spectrograms
+experiments/metrics/snr*
 
 # GCP related
 experiments/download_from_gcp.sh
