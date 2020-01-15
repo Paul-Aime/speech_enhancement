@@ -21,7 +21,7 @@ else:
     DEVICE = torch.device('cpu')
     print('Using CPU')
 
-EARLY_BREAK = True
+EARLY_BREAK = False
 
 ###############################################################################
 # Main
@@ -246,6 +246,7 @@ def save_spectrogram(spectrogram, saving_path, params):
     ax.set_xlabel('STFT frame number', fontproperties=Font().axis_labels, fontweight='bold')
     ax.set_ylabel('Frequencies', fontproperties=Font().axis_labels, fontweight='bold')
 
+    # Custom yticks
     yticks_step_in_hz = 500
     yticks_hz = np.arange(0, fs/2+1, yticks_step_in_hz)
     yticks = yticks_hz * (n_fft/fs)
@@ -265,7 +266,6 @@ def save_spectrogram(spectrogram, saving_path, params):
 
 ###############################################################################
 # Functions
-
 
 def reconstruct_signal(S_abs, S_ang, params, length=None):
     y = dataset.istft(S_abs, S_ang, length=length, **params.istft_kwargs)
