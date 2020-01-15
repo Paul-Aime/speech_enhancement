@@ -127,14 +127,14 @@ def test(model, loss_fn, data_set, params, save_out=False, verbose=True):
         metrics_names = ['snr_clean_vs_noisy',
                          'snr_clean_vs_pred',
                          'snr_pred_vs_noisy']
-        metrics = compute_metrics(
+        metrics = compute_metrics(  # TODO check if file exists *before* computing
             sig_clean, sig_noisy, sig_pred, metrics_names)
 
         # Save outputs
         if save_out:
 
-            save_outputs((sig_clean, sig_noisy, sig_pred), 
-                         (y_abs, x_abs, y_pred), 
+            save_outputs((sig_clean, sig_noisy, sig_pred),
+                         (y_abs, x_abs, y_pred),
                          sound_path_id, params,
                          modes=('clean', 'noisy', 'pred'))
 
@@ -205,17 +205,21 @@ def save_outputs(signals, spectrograms, sound_path_id, params,
         signal_path = os.path.join(signal_dir, spid_mode)
         if not os.path.isdir(os.path.dirname(signal_path)):
             os.makedirs(os.path.dirname(signal_path))
-        torch.save(signal, signal_path + '.signal')
-        wavfile.write(signal_path + '.wav', int(params.fs),
-                      signal.squeeze().cpu().numpy())
+        if not os.path.exists(signal_path + '.signal'):
+            torch.save(signal, signal_path + '.signal')
+        if not os.path.exists(signal_path + '.wav'):
+            wavfile.write(signal_path + '.wav', int(params.fs),
+                          signal.squeeze().cpu().numpy())
 
         # Save spectrogram
         spectrogram_dir = params.spectrograms_saving_dir
         spectrogram_path = os.path.join(spectrogram_dir, spid_mode)
         if not os.path.isdir(os.path.dirname(spectrogram_path)):
             os.makedirs(os.path.dirname(spectrogram_path))
-        save_spectrogram(spect, spectrogram_path + '.png', params)
-        torch.save(spect, spectrogram_path + '.spect')
+        if not os.path.exists(spectrogram_path + '.png'):
+            save_spectrogram(spect, spectrogram_path + '.png', params)
+        if not os.path.exists(spectrogram_path + '.spect'):
+            torch.save(spect, spectrogram_path + '.spect')
 
 
 def save_metrics(metrics, metrics_names, sound_path_id, params):
@@ -229,7 +233,8 @@ def save_metrics(metrics, metrics_names, sound_path_id, params):
         if not os.path.isdir(os.path.dirname(mt_sv_path)):
             os.makedirs(os.path.dirname(mt_sv_path))
 
-        torch.save(metric, mt_sv_path)
+        if not os.path.exists(mt_sv_path):
+            torch.save(metric, mt_sv_path)
 
 
 def save_spectrogram(spectrogram, saving_path, params):
