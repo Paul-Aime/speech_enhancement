@@ -10,6 +10,7 @@ from scipy.io import wavfile
 from model import dataset, net
 from model.dataset import batchify
 from utils import backup_utils, cuda_utils, params_utils
+from utils.plot_utils import Font
 
 # DEVICE = cuda_utils.init_cuda(verbose=True)
 
@@ -242,8 +243,8 @@ def save_spectrogram(spectrogram, saving_path, params):
     im = ax.pcolor(spectrogram.squeeze(),
                    cmap=plt.get_cmap('magma'),
                    vmin=0, vmax=1)
-    ax.set_xlabel('STFT frame number')
-    ax.set_ylabel('Frequencies')
+    ax.set_xlabel('STFT frame number', fontproperties=Font().axis_labels, fontweight='bold')
+    ax.set_ylabel('Frequencies', fontproperties=Font().axis_labels, fontweight='bold')
 
     yticks_step_in_hz = 500
     yticks_hz = np.arange(0, fs/2+1, yticks_step_in_hz)
