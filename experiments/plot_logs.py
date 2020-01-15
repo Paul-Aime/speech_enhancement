@@ -1,5 +1,6 @@
 import os
 import torch
+import numpy as np
 import matplotlib.pyplot as plt
 
 if True:  # Not to break code order with autoformatter
@@ -19,23 +20,26 @@ else:
 
 def main():
 
-    for root, dirs, files in os.walk(Params().saved_models_root):
-        print('\n\n')
-        print(' root:\n', root)
-        print(' dirs:\n', dirs)
-        print('files:\n', files)
+    params = Params()
+    saved_models_root = params.saved_models_root
 
+    for root, dirs, files in os.walk(saved_models_root):
         if any((f for f in files if f.endswith('.pt'))):
-            fig, ax = plt.subplots(nrows=1, ncols=1)
-            plot_model_logs_hist(root, chkpt_name='auto', ax=ax, show=False)
-            ax.set_title('/'.join(root.split('/')[-2:]))
-            plt.tight_layout()
-            plt.show()
-            
-            # TODO save instead of show
 
-        # experiment_folder = os.path.basename(os.path.dirname(model_root))
-        # model_folder = os.path.basename(model_root)
+            fig, ax = plt.subplots(nrows=1, ncols=1)
+
+            plot_model_logs_hist(root, chkpt_name='auto', ax=ax, show=False)
+
+            # ax.set_title('/'.join(root.split('/')[-2:]))
+
+            saving_path = os.path.join(params.metrics_root, 'loss_plot',
+                                       root[len(saved_models_root)+1:] + '.png')
+
+            plt.tight_layout()
+            # plt.show()
+            if not(os.path.isdir(os.path.dirname(saving_path))):
+                os.makedirs(os.path.dirname(saving_path))
+            plt.savefig(saving_path)
 
 
 def plot_model_logs_hist(model_root, chkpt_name='auto', ax=None, show=True):
@@ -64,33 +68,69 @@ def plot_logs_hist(logs, ax=None):
     # Extract info
     train_loss = torch.as_tensor(logs['_TrainingHistory__train_loss'])
     val_loss = torch.as_tensor(logs['_TrainingHistory__val_loss'])
+    epoch_max = logs['_TrainingHistory__epoch']
     patience = logs['patience']
     margin = logs['margin']
 
-    # Train loss
-    ax.plot(train_loss, color='tab:blue', linestyle='-', label='training loss')
+    # Not plotting epoch 1, because training loss begins too high,
+    # then shrinking the whole plot
+    train_loss = train_loss[1:]
+    val_loss = val_loss[1:]
+    xaxis_offset = 2
 
-    # Val loss
-    ax.plot(val_loss, color='tab:orange',
-            linestyle='-', label='validation loss')
-
-    # Best model
-    ax.plot(val_loss.argmin(), val_loss.min(), label='best', color='tab:green',
-            linestyle='', marker='o', markersize=10, markeredgewidth=2, fillstyle='none')
+    # Extrema
+    mini = min(val_loss.min(), train_loss.min())
+    maxi = max(val_loss.max(), train_loss.max())
 
     # Early stop boundaries
-    ax.plot([len(val_loss)-patience, len(val_loss)],
-            [(1+margin)*min(val_loss), (1+margin)*min(val_loss)],
-            '-.k')
-    ax.plot([len(val_loss)-patience, len(val_loss)-patience],
-            [(1+margin)*min(val_loss), max(max(val_loss), max(train_loss))],
-            '-.k')
+    es_xorg = epoch_max - patience
+    es_yorg = (1+margin)*min(val_loss)
+    ax.plot(np.array([es_xorg, epoch_max]),
+            np.array([es_yorg, es_yorg]),
+            '-.k')  # horizontal line
+    ax.plot(np.array([es_xorg, es_xorg]),
+            np.array([es_yorg, maxi]),
+            '-.k', label='early stop window')  # vertical line
+
+    # Train loss
+    ax.plot(range(xaxis_offset, epoch_max+xaxis_offset-1), train_loss,
+            color='tab:blue', linestyle='-', marker='.', label='training loss')
+
+    # Val loss
+    ax.plot(range(xaxis_offset, epoch_max+xaxis_offset-1), val_loss,
+            color='tab:orange', linestyle='-', marker='.', label='validation loss')
+
+    # Best model
+    ax.plot(val_loss.argmin() + xaxis_offset, val_loss.min(), label='best', color='tab:green',
+            linestyle='', marker='o', markersize=10, markeredgewidth=2, fillstyle='none')
+
+    # Test is training finished
+    val_loss_min = val_loss.min()
+    val_loss_late_min = val_loss[-patience:].min()
+    if not val_loss_late_min > ((1 + margin) * val_loss_min):
+        ax.plot(val_loss[-patience:].argmin() + xaxis_offset + (epoch_max - patience - 1), val_loss_late_min,
+                label='training not finished', color='tab:red',
+                linestyle='', marker='o', markersize=7, markeredgewidth=0)
+
+    # Custom xticks
+    xticks = np.arange(0, epoch_max+1, 5)
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(['{:d}'.format(int(xt)) for xt in xticks])
+
+    # Custom yticks
+    yticks_step_wanted = 0.005  # x 100
+    yticks_wanted = np.arange(
+        mini*100, maxi*100+yticks_step_wanted, yticks_step_wanted)
+    yticks = yticks_wanted / 100
+    ax.set_yticks(yticks)
+    ax.set_yticklabels(['{:3.3f}'.format(yt) for yt in yticks_wanted])
+    ax.grid(True)
 
     # Labels etc.
     ax.set_xlabel('Epoch',
                   fontproperties=Font().axis_labels,
                   fontweight='bold')
-    ax.set_ylabel('Mean MSE loss',
+    ax.set_ylabel('Mean MSE loss (x100)',
                   fontproperties=Font().axis_labels,
                   fontweight='bold')
     ax.legend()

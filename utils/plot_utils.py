@@ -9,14 +9,15 @@ def main():
     fig, ax = plt.subplots(nrows=1, ncols=1)
 
     ax.plot(x)
-    ax.set_xlabel('XLabel', fontproperties=Font().axis_labels, fontweight='bold')
-    
+    ax.set_xlabel('XLabel', fontproperties=Font().axis_labels,
+                  fontweight='bold')
+
     plt.show()
 
 
 class Font():
 
-    def __init__(self, family='serif', name='Times New Roman'):
+    def __init__(self, family='serif', name='DejaVu Sans'):
 
         self.family = family
         self.name = name
@@ -25,8 +26,8 @@ class Font():
 
     def __init_axis_labels(self):
         font = FontProperties()
-        font.set_family('serif')
-        font.set_name('Times New Roman')
+        font.set_family(self.family)
+        font.set_name(self.name)
         font.set_style('italic')
         return font
 
