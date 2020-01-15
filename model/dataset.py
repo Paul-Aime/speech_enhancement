@@ -33,79 +33,9 @@ else:
 ##################################################
 # Main
 
-
 def main():
-
-    # --- Paths
-    root_dir = './data/raw'
-
-    csv_raw_train = './data/train_raw.csv'
-    csv_raw_test = './data/test_raw.csv'
-
-    csv_noise_train = './data/train_noise.csv'
-    csv_noise_val = './data/val_noise.csv'
-    csv_noise_test = './data/test_noise.csv'
-
-    noise_path_train = './data/noise/babble_train.wav'
-    noise_path_val = './data/noise/babble_val.wav'
-    noise_path_test = './data/noise/babble_test.wav'
-
-    # --- Parameters
-    fs = 8 * 1e3  # 8 kHz
-    snr = 1       # in dB
-    n_fft = 256
-    hop_length = n_fft // 2
-    stft_kwargs = {
-        "n_fft": n_fft,
-        "hop_length": hop_length,
-        "win_length": None,
-        "window": torch.hann_window(n_fft).numpy(),  # 'hann',
-        "center": True,
-        "dtype": np.complex64,
-        "pad_mode": 'reflect'  # 'reflect'
-    }
-
-    # Check if csv files are done
-    if not all(os.path.exists(f) for f in (csv_raw_train, csv_raw_test)):
-        create_csv(root_dir, train_path=csv_raw_train, test_path=csv_raw_test)
-
-    # TODO separate indices from train and val from timit_train folder
-    train_set = CustomDataset(root_dir, csv_raw_train,
-                              noise_path_train, fs, snr, stft_kwargs)
-    # val_set = CustomDataset(root_dir, csv_raw_train,
-    #                         noise_path_val, fs, snr, stft_kwargs)
-    # test_set = CustomDataset(root_dir, csv_raw_train,
-    #                          noise_path_test, fs, snr, stft_kwargs)
-
-    # Plot histograms of lengths
-    # _, ax = plt.subplots()
-    # train_set.histogram_wav_length(ax, label='Train')
-    # test_set.histogram_wav_length(ax, label='Test')
-    # ax.legend()
-    # plt.show()
-
-    # Get an item and plot it
-    print('Taille dataset', len(train_set))
-    x, y = train_set[56]
-    x = x[0] ** 2  # keep only module
-    y = y[0] ** 2  # keep only module
-
-    #wave.write('./tests/test1.wav', 16000, x)
-    #torchaudio.save('./tests/test1.wav', y, 16000)
-    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
-
-    spect1 = ax1.imshow(x.squeeze())
-    ax1.set_title('input : {:d}, {:d}'.format(*x.squeeze().shape))
-    divider = make_axes_locatable(ax1)
-    cax = divider.append_axes('right', size='5%', pad=0.05)
-    fig.colorbar(spect1, cax=cax, orientation='vertical')
-
-    spect2 = ax2.imshow(y.squeeze())
-    ax2.set_title('ground truth : {:d}, {:d}'.format(*y.squeeze().shape))
-    divider = make_axes_locatable(ax2)
-    cax = divider.append_axes('right', size='5%', pad=0.05)
-    fig.colorbar(spect2, cax=cax, orientation='vertical')
-    plt.show()
+    pass
+   
 
 ##################################################
 # Classes
@@ -140,12 +70,12 @@ class CustomDataset(Dataset):
             elif self.mode == 'validation':
                 self.snd_indices = np.arange(self.train_size, len(self))
             else:
-                return ('ERROR : unknown mode, must be one of str(test, train, validation)')
+                print('ERROR : unknown mode, must be one of str(test, train, validation)')
 
         elif self.mode == 'test':
             self.snd_indices = np.arange(len(self))
         else:
-            return ('ERROR : unknown mode, must be one of str(test, train, validation)')
+            print('ERROR : unknown mode, must be one of str(test, train, validation)')
 
         # Resampler
         self.resampler = torchaudio.transforms.Resample(new_freq=self.fs)
