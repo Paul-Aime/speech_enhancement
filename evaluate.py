@@ -118,8 +118,7 @@ def test(model, loss_fn, data_set, params, save_out=False, verbose=True):
                 loss.data*1000, elapsed_t_str), end='\n')
 
         # Reconstruct signal from STFT
-        length = sig_clean.shape[-1]  # ensure y_pred has good length
-        # length = None
+        length = sig_clean.shape[-1]  # ensure y_pred has good length, or None
         sig_pred = reconstruct_signal(y_abs, y_ang, params, length=length)
         if not sig_pred.shape[-1] == sig_noisy.shape[-1] == sig_clean.shape[-1]:
             print('Reconstructed signal has not the same shape as original.')
@@ -134,8 +133,10 @@ def test(model, loss_fn, data_set, params, save_out=False, verbose=True):
         # Save outputs
         if save_out:
 
-            save_outputs((sig_noisy, sig_pred), (x_abs, y_pred), sound_path_id, params,
-                         modes=('noisy', 'pred'))
+            save_outputs((sig_clean, sig_noisy, sig_pred), 
+                         (y_abs, x_abs, y_pred), 
+                         sound_path_id, params,
+                         modes=('clean', 'noisy', 'pred'))
 
             save_metrics(metrics, metrics_names, sound_path_id, params)
 
@@ -243,8 +244,10 @@ def save_spectrogram(spectrogram, saving_path, params):
     im = ax.pcolor(spectrogram.squeeze(),
                    cmap=plt.get_cmap('magma'),
                    vmin=0, vmax=1)
-    ax.set_xlabel('STFT frame number', fontproperties=Font().axis_labels, fontweight='bold')
-    ax.set_ylabel('Frequencies', fontproperties=Font().axis_labels, fontweight='bold')
+    ax.set_xlabel('STFT frame number',
+                  fontproperties=Font().axis_labels, fontweight='bold')
+    ax.set_ylabel('Frequencies', fontproperties=Font(
+    ).axis_labels, fontweight='bold')
 
     # Custom yticks
     yticks_step_in_hz = 500
@@ -266,6 +269,7 @@ def save_spectrogram(spectrogram, saving_path, params):
 
 ###############################################################################
 # Functions
+
 
 def reconstruct_signal(S_abs, S_ang, params, length=None):
     y = dataset.istft(S_abs, S_ang, length=length, **params.istft_kwargs)
