@@ -36,7 +36,7 @@ def main():
     mode = 'auto'  # Load the last trained model from params settings
 
     params = params_utils.Params()
-    params.snr = -20  # dB
+    params.snr = -10  # dB
 
     # Get the last from params settings
     if mode == 'auto':
