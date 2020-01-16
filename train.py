@@ -35,6 +35,9 @@ def main():
 
     # Model : create (and load if params.load_model == True)
     model, optimizer, chkpt_logs = net.get_model(params, verbose=verbose)
+    print('\nNumber of trainable parameters: ', end='')
+    print(sum(p.numel() for p in model.parameters() if p.requires_grad))
+    
     # Loss function should remain the same if loading a checkpoint
     loss_fn = torch.nn.MSELoss(reduction='mean')
 
