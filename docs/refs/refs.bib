@@ -1,5 +1,14 @@
 % ---------- ARTICLES
 
+@inproceedings{lecun1995,
+    author  = {Lecun, Yann and Bengio, Y.},
+    year    = {1995},
+    month   = {01},
+    pages   = {},
+    title   = {Convolutional Networks for Images, Speech, and Time-Series},
+    journal = {The Handbook of Brain Theory and Neural Networks}
+}
+
 @article{krishnamurthy2009,
 	author  = {N. {Krishnamurthy} and
 			   J. H. L. {Hansen}},
@@ -15,6 +24,23 @@
 	url     = {https://ieeexplore.ieee.org/document/5175669}
 }
 
+@incollection{jain2009,
+	title     = {Natural Image Denoising with Convolutional Networks},
+	author    = {Jain, Viren and Sebastian Seung},
+	booktitle = {Advances in Neural Information Processing Systems 21},
+	editor    = {D. Koller and D. Schuurmans and Y. Bengio and L. Bottou},
+	pages     = {769--776},
+	year      = {2009},
+	publisher = {Curran Associates, Inc.},
+	url       = {http://papers.nips.cc/paper/3506-natural-image-denoising-with-convolutional-networks.pdf}
+}
+
+@inproceedings{sturmel2011,
+  title  = {Signal Reconstruction from STFT Magnitude : A State of the Art},
+  author = {Nicolas Sturmel and Laurent Daudet},
+  year   = {2011}
+}
+
 @article{xu2015,
 	author  = {Xu, Yong and
 		       Du, Jun and
@@ -27,6 +53,15 @@
 	volume  = {23},
 	journal = {IEEE/ACM Transactions on Audio, Speech, and Language Processing},
 	doi     = {10.1109/TASLP.2014.2364452}
+}
+
+@inproceedings{kumar2016,
+    author = {Kumar, Anurag and Florencio, Dinei},
+	title  = {Speech Enhancement In Multiple-Noise Conditions using Deep Neural Networks},
+    year   = {2016},
+    month  = {05},
+    pages  = {},
+    doi    = {10.21437/Interspeech.2016-88}
 }
 
 @inproceedings{abdelaziz2017,
@@ -50,6 +85,51 @@
 	url       = {http://dx.doi.org/10.21437/Interspeech.2017-1465}
 }
 
+@article{prusa2017,
+    author  = {Z. {Průša} and P. {Balazs} and P. L. {Søndergaard}},
+    journal = {IEEE/ACM Transactions on Audio, Speech, and Language Processing},
+    title   = {A Noniterative Method for Reconstruction of Phase From STFT Magnitude},
+    year    = {2017},
+    volume  = {25},
+    number  = {5},
+    pages   = {1154-1164},
+    doi     = {10.1109/TASLP.2017.2678166},
+    ISSN    = {2329-304},
+    month   = {May}
+}
+
+@article{prusa2017b,
+    author  = {Z. {Průša} and P. {Rajmic}},
+    journal = {IEEE Signal Processing Letters},
+    title   = {Toward High-Quality Real-Time Signal Reconstruction From STFT Magnitude},
+    year    = {2017},
+    volume  = {24},
+    number  = {6},
+    pages   = {892-896},
+    doi     = {10.1109/LSP.2017.2696970},
+    ISSN    = {1558-2361},
+    month   = {June}
+}
+
+@inproceedings{rashmirekha2018,
+    author = {Ram, Rashmirekha and Mohanty, Mihir},
+    year   = {2018},
+    month  = {01},
+    pages  = {107-111},
+    title  = {The Use of Deep Learning in Speech Enhancement},
+    doi    = {10.15439/2017KM40}
+}
+
+@inbook{hepsiba2019,
+    author = {Hepsiba, D. and Justin, Judith},
+    year   = {2019},
+    month  = {07},
+    pages  = {103-112},
+    title  = {Role of Deep Neural Network in Speech Enhancement: A Review},
+    isbn   = {978-981-13-9128-6},
+    doi    = {10.1007/978-981-13-9129-3_8}
+}
+
 @inproceedings{ouyang2019,
 	author    = {Z. {Ouyang} and H. {Yu} and W. {Zhu} and B. {Champagne}},
 	title     = {A Fully Convolutional Neural Network for Complex Spectrogram Processing in Speech Enhancement},
@@ -63,6 +143,9 @@
 }
 
 
+
+
+
 % ---------- OTHERS
 
 @misc{torchaudio,
@@ -71,3 +154,38 @@
     url    = {https://github.com/pytorch/audio}
 }
 
+@article{portnoff1981,
+	author  = {M. {Portnoff}},
+	journal = {IEEE Transactions on Acoustics, Speech, and Signal Processing},
+	title   = {Short-time Fourier analysis of sampled speech},
+	year    = {1981},
+	volume  = {29},
+	number  = {3},
+	pages   = {364-373},
+	doi     = {10.1109/TASSP.1981.1163580},
+	ISSN    = {0096-3518},
+	month   = {June}
+}
+
+@inproceedings{mcFee2015librosa,
+	title = {librosa: Audio and Music Signal Analysis in Python},
+	author = {Brian McFee and Colin Raffel and Dawen Liang and Daniel Patrick Whittlesey Ellis and Matt McVicar and Eric Battenberg and Oriol Nieto},
+	year = {2015}
+}
+
+% BN after or before ReLU ?
+@misc{ducha-aiki2020Jan,
+	author  = {ducha-aiki},
+	title   = {{caffenet-benchmark}},
+	journal = {GitHub},
+	url     = {https://github.com/ducha-aiki/caffenet-benchmark/blob/master/batchnorm.md}
+}
+
+%Adam optimizer
+@article{kingma2014Adam,
+  title   = {Adam: A Method for Stochastic Optimization},
+  author  = {Diederik P. Kingma and Jimmy Ba},
+  journal = {CoRR},
+  year    = {2014},
+  volume  = {abs/1412.6980}
+}
