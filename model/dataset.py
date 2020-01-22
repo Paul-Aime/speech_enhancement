@@ -285,6 +285,7 @@ def add_noise_snr(sig, noise, snr):
     alpha = ((torch.mean(sig**2, dim=1) /  # power of sig
               torch.mean(noise**2, dim=1)) * (10 ** (-snr/10))).sqrt()
 
+    # TODO ().T).T to handle multi-channels, there may be a better way
     return sig + (noise.T * alpha).T
 
 
